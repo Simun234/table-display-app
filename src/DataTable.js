@@ -1,80 +1,57 @@
 import React, { useEffect, useState } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
 
 const DataTable = () => {
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 24;
+  const [itemsPerPage, setItemsPerPage] = useState(24);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get("/data.json");
-        console.log("Response data:", response.data);
-        if (Array.isArray(response.data)) {
-          setData(response.data);
-        } else if (typeof response.data === "object") {
-          const dataArray = Object.values(response.data);
-          console.log("Extracted data array:", dataArray);
-          setData(dataArray);
-        } else {
-          console.error(
-            "Data fetched is not an array or object:",
-            response.data
-          );
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
     fetchData();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      const response = await axios.get("/data.json");
+      if (
+        response.data.hasOwnProperty("data") &&
+        Array.isArray(response.data.data)
+      ) {
+        setData(response.data.data);
+      } else {
+        console.error(
+          "Fetched data does not contain an array in the 'data' property:",
+          response.data
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  const handleTezinaClick = (event, tezinaValue) => {
+    const newTezina = prompt("Enter new tezina", tezinaValue);
+    if (newTezina !== null) {
+      const parsedTezina = parseFloat(newTezina);
+      if (!isNaN(parsedTezina)) {
+        event.target.textContent = parsedTezina;
+      } else {
+        alert("Please enter a valid number for tezina");
+      }
+    }
+  };
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentPageData = data.slice(indexOfFirstItem, indexOfLastItem);
 
-  const renderData = () => {
-    if (data.length === 0) {
-      return (
-        <tr>
-          <td colSpan="8" className="text-center">
-            No data available
-          </td>
-        </tr>
-      );
-    } else {
-      return currentPageData.map((item) => (
-        <tr key={item.rowId}>
-          <td>{item.rowId}</td>
-          <td>{item.iskaznica}</td>
-          <td>{item.datum}</td>
-          <td>{item.vrijeme}</td>
-          <td>{item.oznaciti}</td>
-          <td>{item.barkod}</td>
-          <td>{item.tezina}</td>
-          <td>{item.registracija}</td>
-        </tr>
-      ));
-    }
-  };
   return (
     <div className="container-sm container-lg">
       <div className="d-flex justify-content-between">
-        <button
-          type="button"
-          id="darkModeBtn"
-          className="btn btn-dark mb-2 mt-2"
-        >
+        <button type="button" className="btn btn-dark mb-2 mt-2">
           Dark
         </button>
-        <button
-          type="button"
-          id="lightModeBtn"
-          className="btn btn-light mb-2 mt-2"
-        >
+        <button type="button" className="btn btn-light mb-2 mt-2">
           Light
         </button>
       </div>
@@ -109,41 +86,58 @@ const DataTable = () => {
             </tr>
           </thead>
           <tbody className="table-dark" id="table-body">
-            {renderData()}
+            {currentPageData.map((item) => (
+              <tr key={item.rowId}>
+                <td className="border text-center">{item.rowId}</td>
+                <td className="border text-center">{item.iskaznica}</td>
+                <td className="border text-center">{item.datum}</td>
+                <td className="border text-center">{item.vrijeme}</td>
+                <td className="border text-center">{item.oznaciti}</td>
+                <td className="border text-center">{item.barkod}</td>
+                <td
+                  className="border text-center"
+                  onClick={(e) => handleTezinaClick(e, item.tezina || "")}
+                  style={{ cursor: "pointer" }}
+                >
+                  {item.tezina || ""}
+                </td>
+                <td className="border text-center">{item.registracija}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
       <div className="d-flex flex-wrap justify-content-between mb-2">
         <button
-          type="btn"
+          type="button"
           className="btn btn-primary mb-2 mb-md-0 mr-2"
           id="prethodni"
         >
           Prethodni
         </button>
         <button
-          type="btn"
+          type="button"
           className="btn btn-primary mb-2 mb-md-0 mr-2"
           id="prvi"
         >
           Prvi
         </button>
         <button
-          type="btn"
+          type="button"
           className="btn btn-primary mb-2 mb-md-0 mr-2"
           id="prikazi-sve"
         >
           Prikaži sve
         </button>
         <button
-          type="btn"
+          type="button"
           className="btn btn-primary mb-2 mb-md-0 mr-2"
           id="zadnji"
         >
           Zadnji
         </button>
         <button
-          type="btn"
+          type="button"
           className="btn btn-primary mb-2 mb-md-0"
           id="sljedeći"
         >
