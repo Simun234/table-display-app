@@ -4,7 +4,10 @@ import axios from "axios";
 const DataTable = () => {
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [showAllData, setShowAllData] = useState(false);
   const [itemsPerPage, setItemsPerPage] = useState(24);
+  const [backgroundColor, setBackgroundColor] = useState("white");
 
   useEffect(() => {
     fetchData();
@@ -41,108 +44,156 @@ const DataTable = () => {
     }
   };
 
+  const handleDarkClick = () => {
+    setBackgroundColor("black");
+  };
+
+  const handleLightClick = () => {
+    setBackgroundColor("white");
+  };
+
+  const handlePreviousClick = () => {
+    setCurrentPage((currentPage) => Math.max(currentPage - 1, 1));
+  };
+
+  const handleFirstClick = () => {
+    setCurrentPage(1);
+  };
+
+  const handleShowAllClick = () => {
+    setShowAllData(true);
+    setCurrentPage(1);
+  };
+
+  const handleLastClick = () => {
+    setCurrentPage(Math.ceil(data.length / itemsPerPage));
+  };
+
+  const handleNextClick = () => {
+    setCurrentPage((currentPage) =>
+      Math.min(currentPage + 1, Math.ceil(data.length / itemsPerPage))
+    );
+  };
+
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentPageData = data.slice(indexOfFirstItem, indexOfLastItem);
+  const currentPageData = showAllData
+    ? data
+    : data.slice(indexOfFirstItem, indexOfLastItem);
 
   return (
-    <div className="container-sm container-lg">
-      <div className="d-flex justify-content-between">
-        <button type="button" className="btn btn-dark mb-2 mt-2">
-          Dark
-        </button>
-        <button type="button" className="btn btn-light mb-2 mt-2">
-          Light
-        </button>
-      </div>
-      <div className="table-responsive-sm table-responsive-lg">
-        <table className="table">
-          <thead className="table-dark mt-2">
-            <tr>
-              <th className="font-sans-serif fw-normal fs-3 text-white text-center border">
-                RowId
-              </th>
-              <th className="font-sans-serif fw-normal fs-3 text-white text-center border">
-                Iskaznica
-              </th>
-              <th className="font-sans-serif fw-normal fs-3 text-white text-center border">
-                Datum
-              </th>
-              <th className="font-sans-serif fw-normal fs-3 text-white text-center border">
-                Vrijeme
-              </th>
-              <th className="font-sans-serif fw-normal fs-3 text-white text-center border">
-                Označiti
-              </th>
-              <th className="font-sans-serif fw-normal fs-3 text-white text-center border">
-                Barkod
-              </th>
-              <th className="font-sans-serif fw-normal fs-3 text-white text-center border">
-                Težina(kg)
-              </th>
-              <th className="font-sans-serif fw-normal fs-3 text-white text-center border">
-                Registracija
-              </th>
-            </tr>
-          </thead>
-          <tbody className="table-dark" id="table-body">
-            {currentPageData.map((item) => (
-              <tr key={item.rowId}>
-                <td className="border text-center">{item.rowId}</td>
-                <td className="border text-center">{item.iskaznica}</td>
-                <td className="border text-center">{item.datum}</td>
-                <td className="border text-center">{item.vrijeme}</td>
-                <td className="border text-center">{item.oznaciti}</td>
-                <td className="border text-center">{item.barkod}</td>
-                <td
-                  className="border text-center"
-                  onClick={(e) => handleTezinaClick(e, item.tezina || "")}
-                  style={{ cursor: "pointer" }}
-                >
-                  {item.tezina || ""}
-                </td>
-                <td className="border text-center">{item.registracija}</td>
+    <div style={{ backgroundColor }}>
+      <div className="container-sm container-lg">
+        <div className="d-flex justify-content-between">
+          <button
+            type="button"
+            className="btn btn-dark mb-2 mt-2"
+            onClick={handleDarkClick}
+          >
+            Dark
+          </button>
+          <button
+            type="button"
+            className="btn btn-light mb-2 mt-2"
+            onClick={handleLightClick}
+          >
+            Light
+          </button>
+        </div>
+        <div className="table-responsive-sm table-responsive-lg">
+          <table className="table">
+            <thead className="table-dark mt-2">
+              <tr>
+                <th className="font-sans-serif fw-normal fs-3 text-white text-center border">
+                  RowId
+                </th>
+                <th className="font-sans-serif fw-normal fs-3 text-white text-center border">
+                  Iskaznica
+                </th>
+                <th className="font-sans-serif fw-normal fs-3 text-white text-center border">
+                  Datum
+                </th>
+                <th className="font-sans-serif fw-normal fs-3 text-white text-center border">
+                  Vrijeme
+                </th>
+                <th className="font-sans-serif fw-normal fs-3 text-white text-center border">
+                  Označiti
+                </th>
+                <th className="font-sans-serif fw-normal fs-3 text-white text-center border">
+                  Barkod
+                </th>
+                <th className="font-sans-serif fw-normal fs-3 text-white text-center border">
+                  Težina(kg)
+                </th>
+                <th className="font-sans-serif fw-normal fs-3 text-white text-center border">
+                  Registracija
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="d-flex flex-wrap justify-content-between mb-2">
-        <button
-          type="button"
-          className="btn btn-primary mb-2 mb-md-0 mr-2"
-          id="prethodni"
-        >
-          Prethodni
-        </button>
-        <button
-          type="button"
-          className="btn btn-primary mb-2 mb-md-0 mr-2"
-          id="prvi"
-        >
-          Prvi
-        </button>
-        <button
-          type="button"
-          className="btn btn-primary mb-2 mb-md-0 mr-2"
-          id="prikazi-sve"
-        >
-          Prikaži sve
-        </button>
-        <button
-          type="button"
-          className="btn btn-primary mb-2 mb-md-0 mr-2"
-          id="zadnji"
-        >
-          Zadnji
-        </button>
-        <button
-          type="button"
-          className="btn btn-primary mb-2 mb-md-0"
-          id="sljedeći"
-        >
-          Sljedeći
-        </button>
+            </thead>
+            <tbody className="table-dark" id="table-body">
+              {currentPageData.map((item) => (
+                <tr key={item.rowId}>
+                  <td className="border text-center">{item.rowId}</td>
+                  <td className="border text-center">{item.iskaznica}</td>
+                  <td className="border text-center">{item.datum}</td>
+                  <td className="border text-center">{item.vrijeme}</td>
+                  <td className="border text-center">{item.oznaciti}</td>
+                  <td className="border text-center">{item.barkod}</td>
+                  <td
+                    className="border text-center"
+                    onClick={(e) => handleTezinaClick(e, item.tezina || "")}
+                    style={{ cursor: "pointer" }}
+                  >
+                    {item.tezina || ""}
+                  </td>
+                  <td className="border text-center">{item.registracija}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="d-flex flex-wrap justify-content-between mb-2">
+          <button
+            type="button"
+            className="btn btn-primary mb-2 mb-md-0 mr-2"
+            id="prethodni"
+            onClick={handlePreviousClick}
+          >
+            Prethodni
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary mb-2 mb-md-0 mr-2"
+            id="prvi"
+            onClick={handleFirstClick}
+          >
+            Prvi
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary mb-2 mb-md-0 mr-2"
+            id="prikazi-sve"
+            onClick={handleShowAllClick}
+          >
+            Prikaži sve
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary mb-2 mb-md-0 mr-2"
+            id="zadnji"
+            onClick={handleLastClick}
+          >
+            Zadnji
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary mb-2 mb-md-0"
+            id="sljedeći"
+            onClick={handleNextClick}
+          >
+            Sljedeći
+          </button>
+        </div>
       </div>
     </div>
   );
