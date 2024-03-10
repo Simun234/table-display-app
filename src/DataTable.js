@@ -4,9 +4,8 @@ import axios from "axios";
 const DataTable = () => {
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [showAllData, setShowAllData] = useState(false);
-  const [itemsPerPage, setItemsPerPage] = useState(24);
+  const [itemsPerPage] = useState(24);
   const [backgroundColor, setBackgroundColor] = useState("white");
 
   useEffect(() => {
@@ -29,18 +28,6 @@ const DataTable = () => {
       }
     } catch (error) {
       console.error("Error fetching data:", error);
-    }
-  };
-
-  const handleTezinaClick = (event, tezinaValue) => {
-    const newTezina = prompt("Enter new tezina", tezinaValue);
-    if (newTezina !== null) {
-      const parsedTezina = parseFloat(newTezina);
-      if (!isNaN(parsedTezina)) {
-        event.target.textContent = parsedTezina;
-      } else {
-        alert("Please enter a valid number for tezina");
-      }
     }
   };
 
@@ -75,11 +62,35 @@ const DataTable = () => {
     );
   };
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentPageData = showAllData
-    ? data
-    : data.slice(indexOfFirstItem, indexOfLastItem);
+  const handleTezinaClick = (rowId) => {
+    const newData = data.map((item) => {
+      if (item.rowId === rowId) {
+        return { ...item, isEditingTezina: true };
+      }
+      return item;
+    });
+    setData(newData);
+  };
+
+  const handleTezinaChange = (event, rowId) => {
+    const newData = data.map((item) => {
+      if (item.rowId === rowId) {
+        return { ...item, tezina: event.target.value };
+      }
+      return item;
+    });
+    setData(newData);
+  };
+
+  const handleTezinaInputBlur = (rowId) => {
+    const newData = data.map((item) => {
+      if (item.rowId === rowId) {
+        return { ...item, isEditingTezina: false };
+      }
+      return item;
+    });
+    setData(newData);
+  };
 
   return (
     <div style={{ backgroundColor }}>
@@ -130,25 +141,39 @@ const DataTable = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className="table-dark" id="table-body">
-              {currentPageData.map((item) => (
-                <tr key={item.rowId}>
-                  <td className="border text-center">{item.rowId}</td>
-                  <td className="border text-center">{item.iskaznica}</td>
-                  <td className="border text-center">{item.datum}</td>
-                  <td className="border text-center">{item.vrijeme}</td>
-                  <td className="border text-center">{item.oznaciti}</td>
-                  <td className="border text-center">{item.barkod}</td>
-                  <td
-                    className="border text-center"
-                    onClick={(e) => handleTezinaClick(e, item.tezina || "")}
-                    style={{ cursor: "pointer" }}
-                  >
-                    {item.tezina || ""}
-                  </td>
-                  <td className="border text-center">{item.registracija}</td>
-                </tr>
-              ))}
+            <tbody className="table-dark">
+              {data
+                .slice(
+                  (currentPage - 1) * itemsPerPage,
+                  currentPage * itemsPerPage
+                )
+                .map((item) => (
+                  <tr key={item.rowId}>
+                    <td className="border text-center">{item.rowId}</td>
+                    <td className="border text-center">{item.iskaznica}</td>
+                    <td className="border text-center">{item.datum}</td>
+                    <td className="border text-center">{item.vrijeme}</td>
+                    <td className="border text-center">{item.oznaciti}</td>
+                    <td className="border text-center">{item.barkod}</td>
+                    <td
+                      className="border text-center"
+                      style={{ cursor: "pointer" }}
+                      onClick={() => handleTezinaClick(item.rowId)}
+                    >
+                      {item.isEditingTezina ? (
+                        <input
+                          type="text"
+                          value={item.tezina || ""}
+                          onChange={(e) => handleTezinaChange(e, item.rowId)}
+                          onBlur={() => handleTezinaInputBlur(item.rowId)}
+                        />
+                      ) : (
+                        item.tezina
+                      )}
+                    </td>
+                    <td className="border text-center">{item.registracija}</td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
